@@ -60,7 +60,11 @@ PING 192.168.0.1 (192.168.0.1) 56(84) bytes of data.
 64 bytes from 192.168.0.1: icmp_seq=5 ttl=63 time=6.49 ms
 ```
 
-# OSPF 
+## OSPF 
 point-to-point network type
 * No election, reducing sending multicast message to elect DR, BDR.
 * Minize LSDB and faster network convergence, only exchange LSA Type 1, no Type 2.
+
+
+# Preference
+* [ ] [Love2Network](https://www.youtube.com/@Love2Network)
