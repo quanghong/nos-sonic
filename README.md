@@ -13,12 +13,12 @@ cp ./EVE-NG/sonicsw-broadcom.yml /opt/unetlab/html/templates/intel/sonicsw.yml
 ## Maintainance Mode
 We have 3 options to maintain network services without affect to traffic loading.
 * <b>Docker container maintainance</b>
-    Maintain each container without affect to others. Like VRRP container, DHCP container.
+    * Maintain each container without affect to others. Like VRRP container, DHCP container.
 * <b>Network OS maintainance</b>
-    Maintain whole OS running on device - Control Plane. But it still don't affect to Data Plane.
+    * Maintain whole OS running on device - Control Plane. But it still don't affect to Data Plane.
 * <b>Maintaince mode</b>
-    Graceful isolation of Swich on forwarding path.
-    Maintainance on switch without affect to user traffic.
+    * Graceful isolation of Swich on forwarding path.
+    * Maintainance on switch without affect to user traffic.
 
 ## Basic configuration
 **Disable ZTP**
