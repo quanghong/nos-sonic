@@ -2,12 +2,12 @@
 https://sonicfoundation.dev/
 
 ## Images
-https://sonic.software/
-Broadcom virtual switch: version 3.1.2
-Account: admin/YourPaSsWoRd
-Interface: format with file sonicsw.yml
+* Download: https://sonic.software/
+* Broadcom virtual switch: version 3.1.2
+* Account: admin/YourPaSsWoRd
+* Interface: format with file sonicsw.yml
 ```bash
-cp ./SONiC/EVE-NG/sonicsw-broadcom.yml /opt/unetlab/html/templates/intel/sonicsw.yml
+cp ./EVE-NG/sonicsw-broadcom.yml /opt/unetlab/html/templates/intel/sonicsw.yml
 ```
 
 ## Maintainance Mode
