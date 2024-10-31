@@ -6,6 +6,7 @@ interface Loopback 0
  ip address 192.168.0.1/32
 !
 interface Ethernet0
+ description "Link to Spine-1"
  ip address 1.1.1.0/31
  no shutdown
 !
@@ -26,9 +27,9 @@ router bgp 65101
 write mem
 !
 
-{# Spine-2 #}
+{# Spine-1 #}
 !
-hostname Spine-2
+hostname Spine-1
 !
 interface Loopback 0
  ip address 192.168.0.2/32

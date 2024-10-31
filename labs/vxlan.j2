@@ -1,0 +1,77 @@
+{# Leaf-1 #}
+ip vrf Vrf1
+ip anycast-mac-address 00:00:22:22:22:22
+ip anycast-address enable
+!
+interface Vlan10
+ description "Green Servers VLAN"
+ ip vrf forwarding Vrf1
+ ip anycast-address 10.1.1.254/24
+!
+interface Vlan2000
+ description "IRB VLAN"
+ ip vrf forwarding Vrf1
+ ipv6 enable
+!
+interface Loopback 1
+ description "source ip for VXLAN interface"
+ ip address 100.1.1.1/32
+!
+!
+default interface Ethernet4
+interface Ethernet4
+ description "Link to EP-1"
+ switchport access Vlan 10
+ no shutdown
+!
+interface vxlan vtep1
+ source-ip 100.1.1.1
+ map vni 10010 vlan 10
+ map vni 200000 vlan 2000
+ map vni 200000 vrf Vrf1
+!
+
+{# Leaf-2 #}
+ip vrf Vrf1
+ip anycast-mac-address 00:00:22:22:22:22
+ip anycast-address enable
+!
+interface Vlan10
+ description "Green Servers VLAN"
+ ip vrf forwarding Vrf1
+ ip anycast-address 10.1.1.254/24
+!
+interface Vlan11
+ description "Green Servers VLAN"
+ ip vrf forwarding Vrf1
+ ip anycast-address 11.1.1.254/24
+!
+interface Vlan2000
+ description "IRB VLAN"
+ ip vrf forwarding Vrf1
+ ipv6 enable
+!
+interface Loopback 1
+ description "source ip for VXLAN interface"
+ ip address 100.2.2.2/32
+!
+!
+default interface Ethernet0
+interface Ethernet0
+ description "Link to EP-2"
+ switchport access Vlan 10
+ no shutdown
+!
+default interface Ethernet5
+interface Ethernet5
+ description "Link to EP-3"
+ switchport access Vlan 11
+ no shutdown
+!
+interface vxlan vtep1
+ source-ip 100.1.1.1
+ map vni 10010 vlan 10
+ map vni 10011 vlan 11
+ map vni 200000 vlan 2000
+ map vni 200000 vrf Vrf1
+!

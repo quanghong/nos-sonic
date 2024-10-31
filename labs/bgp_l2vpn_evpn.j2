@@ -1,0 +1,67 @@
+{# Spine-1 #}
+router bgp 65000
+ !
+ address-family l2vpn evpn
+ !
+ neighbor 1.1.1.0
+  remote-as 65101
+  !
+  address-family l2vpn evpn
+   activate
+ !
+ neighbor 1.1.1.3
+  remote-as 65102
+  !
+  address-family l2vpn evpn
+   activate
+   end
+!
+write memory
+
+{# Leaf-1 #}
+router bgp 65101 vrf Vrf1
+ router-id 192.168.1.1
+ !
+ address-family ipv4 unicast
+  redistribute connected
+ !
+ address-family l2vpn evpn
+  advertise ipv4 unicast
+!
+router bgp 65101
+ !
+ address-family l2vpn evpn
+  advertise-all-vni
+ !
+ neighbor 1.1.1.1
+  remote-as 65000
+  !
+  address-family l2vpn evpn
+   activate
+   end
+!
+write memory
+
+{# Leaf-2 #}
+router bgp 65102 vrf Vrf1
+ router-id 192.168.1.3
+ !
+ address-family ipv4 unicast
+  redistribute connected
+ !
+ address-family l2vpn evpn
+  advertise ipv4 unicast
+!
+router bgp 65102
+ !
+ address-family l2vpn evpn
+  advertise-all-vni
+ !
+ neighbor 1.1.1.2
+  remote-as 65000
+  !
+  address-family l2vpn evpn
+   activate
+   end
+!
+write memory
