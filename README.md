@@ -25,10 +25,18 @@ We have 3 options to maintain network services without affect to traffic loading
 ```bash
 sudo ztp disable -y
 ```
+**Check system, services, containers**
+```bash
+show system status
+System is ready
+```
 **Configuration mode**
 ```bash
 sonic-cli
 ```
+
+## Topology
+![Topology](./labs/Love2Network_topo.jpg)
 
 ## BGP Underlay
 ```bash
@@ -207,10 +215,66 @@ VPCS> ping 10.1.1.2
 
 
 ## OSPF 
-point-to-point network type
-* No election, reducing sending multicast message to elect DR, BDR.
-* Minize LSDB and faster network convergence, only exchange LSA Type 1, no Type 2.
+Choose point-to-point network type:
+* <b>No DR/BDR election</b>, reducing sending multicast message.
+* <b>Minimize LSDB and faster network convergence</b>, only exchange LSA Type 1, no Type 2.
 
+**OSPF neighbors**
+```bash
+# No DR/BDR election.
+Spine-1# show ip ospf neighbor
+
+Neighbor ID     Pri State           Dead Time Address         Interface            RXmtL RqstL DBsmL
+192.168.0.1       1 Full/DROther      38.167s 192.168.0.1     Ethernet0:192.168.0.2     0     0     0
+192.168.0.3       1 Full/DROther      36.483s 192.168.0.3     Ethernet4:192.168.0.2     0     0     0
+```
+
+**OSPF LSDB**
+```bash
+# Only LSA Type 1, no LSA Type 2.
+Spine-1# show ip ospf database
+VRF Name: default
+
+       OSPF Router with ID (192.168.0.2)
+
+                Router Link States (Area 0.0.0.1)
+
+Link ID         ADV Router      Age  Seq#       CkSum  Link count
+192.168.0.1     192.168.0.1       20 0x80000006 0xd43b 2
+192.168.0.2     192.168.0.2       48 0x8000000a 0x8b6c 3
+192.168.0.3     192.168.0.3      111 0x80000004 0x715d 2
+```
+
+**OSPF routes**
+```bash
+Spine-1# show ip ospf route
+============ OSPF network routing table ============
+N    192.168.0.1/32        [65635] area: 0.0.0.1
+                           via 192.168.0.1, Ethernet0
+N    192.168.0.2/32        [100] area: 0.0.0.1
+                           directly attached to Loopback0
+N    192.168.0.3/32        [65635] area: 0.0.0.1
+                           via 192.168.0.3, Ethernet4
+
+============ OSPF router routing table =============
+
+============ OSPF external routing table ===========
+```
+
+**Verify**
+```bash
+Leaf-1# ping 192.168.0.3
+PING 192.168.0.3 (192.168.0.3) 56(84) bytes of data.
+64 bytes from 192.168.0.3: icmp_seq=1 ttl=63 time=11.2 ms
+64 bytes from 192.168.0.3: icmp_seq=2 ttl=63 time=7.70 ms
+64 bytes from 192.168.0.3: icmp_seq=3 ttl=63 time=5.29 ms
+64 bytes from 192.168.0.3: icmp_seq=4 ttl=63 time=4.84 ms
+64 bytes from 192.168.0.3: icmp_seq=5 ttl=63 time=8.08 ms
+^C
+--- 192.168.0.3 ping statistics ---
+5 packets transmitted, 5 received, 0% packet loss, time 4017ms
+rtt min/avg/max/mdev = 4.842/7.429/11.234/2.292 ms
+```
 
 # Preference
 * [ ] [Love2Network](https://www.youtube.com/@Love2Network)
