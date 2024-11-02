@@ -16,7 +16,7 @@ We have 3 options to maintain network services without affect to traffic loading
     * Maintain each container without affect to others. Like VRRP container, DHCP container.
 * <b>Network OS maintainance</b>
     * Maintain whole OS running on device - Control Plane. But it still don't affect to Data Plane.
-* <b>Maintaince mode</b>
+* <b>Maintainance mode</b>
     * Graceful isolation of Swich on forwarding path.
     * Maintainance on switch without affect to user traffic.
 
