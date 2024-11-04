@@ -1,0 +1,238 @@
+{# Leaf-1 #}
+configure terminal
+!
+interface Loopback 0
+ description "Router-ID"
+ ip address 192.168.0.1/32
+!
+interface Ethernet 0
+ description "Link to Spine-1"
+ no ip address
+ ip unnumbered Loopback0
+ no shutdown
+ !
+!
+interface Ethernet 2
+ description "Link to Spine-2"
+ no ip address
+ ip unnumbered Loopback0
+ no shutdown
+ !
+!
+router ospf
+ ospf router-id 192.168.0.1
+ auto-cost reference-bandwidth 1000000
+ !
+!
+interface Loopback 0
+ ip ospf area 1
+!
+interface Ethernet 0
+ ip ospf area 1
+ ip ospf network point-to-point
+ !
+!
+interface Ethernet 2
+ ip ospf area 1
+ ip ospf network point-to-point
+ !
+!
+end
+write mem
+!
+
+{# Leaf-3 #}
+configure terminal
+!
+interface Loopback 0
+ description "Router-ID"
+ ip address 192.168.0.3/32
+!
+interface Ethernet 0
+ description "Link to Spine-1"
+ no ip address
+ ip unnumbered Loopback0
+ no shutdown
+ !
+!
+interface Ethernet 2
+ description "Link to Spine-2"
+ no ip address
+ ip unnumbered Loopback0
+ no shutdown
+ !
+!
+router ospf
+ ospf router-id 192.168.0.3
+ auto-cost reference-bandwidth 1000000
+ !
+!
+interface Loopback 0
+ ip ospf area 1
+!
+interface Ethernet 0
+ ip ospf area 1
+ ip ospf network point-to-point
+ !
+!
+interface Ethernet 2
+ ip ospf area 1
+ ip ospf network point-to-point
+ !
+!
+end
+write mem
+!
+
+{# Leaf-2 #}
+configure terminal
+!
+interface Loopback 0
+ description "Router-ID"
+ ip address 192.168.0.2/32
+!
+interface Ethernet 4
+ description "Link to Spine-1"
+ no ip address
+ ip unnumbered Loopback0
+ no shutdown
+ !
+!
+interface Ethernet 2
+ description "Link to Spine-2"
+ no ip address
+ ip unnumbered Loopback0
+ no shutdown
+ !
+!
+router ospf
+ ospf router-id 192.168.0.2
+ auto-cost reference-bandwidth 1000000
+ !
+!
+interface Loopback 0
+ ip ospf area 1
+!
+interface Ethernet 4
+ ip ospf area 1
+ ip ospf network point-to-point
+ !
+!
+interface Ethernet 2
+ ip ospf area 1
+ ip ospf network point-to-point
+ !
+!
+end
+write mem
+!
+
+{# Spine-1 #}
+configure terminal
+!
+interface Loopback 0
+ description "Router-ID"
+ ip address 192.168.0.4/32
+!
+interface Ethernet 0
+ description "Link to Leaf-1"
+ no ip address
+ ip unnumbered Loopback0
+ no shutdown
+ !
+!
+interface Ethernet 3
+ description "Link to Leaf-3"
+ no ip address
+ ip unnumbered Loopback0
+ no shutdown
+ !
+!
+interface Ethernet 4
+ description "Link to Leaf-2"
+ no ip address
+ ip unnumbered Loopback0
+ no shutdown
+ !
+!
+router ospf
+ ospf router-id 192.168.0.4
+ auto-cost reference-bandwidth 1000000
+ !
+!
+interface Loopback 0
+ ip ospf area 1
+!
+interface Ethernet 0
+ ip ospf area 1
+ ip ospf network point-to-point
+ !
+!
+interface Ethernet 3
+ ip ospf area 1
+ ip ospf network point-to-point
+ !
+!
+interface Ethernet 4
+ ip ospf area 1
+ ip ospf network point-to-point
+ !
+!
+end
+write mem
+!
+
+{# Spine-2 #}
+configure terminal
+!
+interface Loopback 0
+ description "Router-ID"
+ ip address 192.168.0.5/32
+!
+interface Ethernet1
+ description "Link to Leaf-1"
+ no ip address
+ ip unnumbered Loopback0
+ no shutdown
+ !
+!
+interface Ethernet3
+ description "Link to Leaf-3"
+ no ip address
+ ip unnumbered Loopback0
+ no shutdown
+ !
+!
+interface Ethernet2
+ description "Link to Leaf-2"
+ no ip address
+ ip unnumbered Loopback0
+ no shutdown
+ !
+!
+router ospf
+ ospf router-id 192.168.0.5
+ auto-cost reference-bandwidth 1000000
+ !
+!
+interface Loopback 0
+ ip ospf area 1
+!
+interface Ethernet 1
+ ip ospf area 1
+ ip ospf network point-to-point
+ !
+!
+interface Ethernet 3
+ ip ospf area 1
+ ip ospf network point-to-point
+ !
+!
+interface Ethernet 2
+ ip ospf area 1
+ ip ospf network point-to-point
+ !
+!
+end
+write mem
+!
