@@ -276,5 +276,121 @@ PING 192.168.0.3 (192.168.0.3) 56(84) bytes of data.
 rtt min/avg/max/mdev = 4.842/7.429/11.234/2.292 ms
 ```
 
+## MCLAG
+<b>Endpoint devices: Ubuntu Server 18.04</b>
+
+Configure LACP with netplan. => <b>FAIL. Port members aren't bundled.</b>
+```bash
+# Check ubuntu server/ desktop.
+dpkg -l | grep ubuntu-server
+
+# Configure netplan.
+cp ./labs/lacp_ubuntu_server.yml /etc/netplan/01-netcfg.yaml
+
+# Apply netplan.
+sudo netplan apply
+
+# Check EtherChannel status.
+ip a show bond0
+5: bond1: <BROADCAST,MULTICAST,MASTER,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP group default qlen 1000
+    link/ether 00:50:00:00:0a:01 brd ff:ff:ff:ff:ff:ff
+    inet 10.1.1.3/24 brd 10.1.1.255 scope global noprefixroute bond1
+       valid_lft forever preferred_lft forever
+    inet6 fe80::250:ff:fe00:a01/64 scope link
+       valid_lft forever preferred_lft forever
+
+# Check EtherChannel port member status.
+cat /proc/net/bonding/bond1
+Ethernet Channel Bonding Driver: v3.7.1 (April 27, 2011)
+
+Bonding Mode: IEEE 802.3ad Dynamic link aggregation
+Transmit Hash Policy: layer2 (0)
+MII Status: up
+MII Polling Interval (ms): 100
+Up Delay (ms): 0
+Down Delay (ms): 0
+
+802.3ad info
+LACP rate: fast
+Min links: 0
+Aggregator selection policy (ad_select): stable
+
+Slave Interface: eth1
+MII Status: up
+Speed: Unknown
+Duplex: Unknown
+Link Failure Count: 0
+Permanent HW addr: 00:50:00:00:0a:01
+Slave queue ID: 0
+Aggregator ID: 1
+Actor Churn State: none
+Partner Churn State: churned
+Actor Churned Count: 0
+Partner Churned Count: 1
+
+Slave Interface: eth2
+MII Status: up
+Speed: Unknown
+Duplex: Unknown
+Link Failure Count: 0
+Permanent HW addr: 00:50:00:00:0a:02
+Slave queue ID: 0
+Aggregator ID: 2
+Actor Churn State: churned
+Partner Churn State: churned
+Actor Churned Count: 1
+Partner Churned Count: 1
+```
+
+Configure LACP with netwoking. => <b>FAIL. Port members aren't bundled.</b>
+```bash
+./labs/ubuntu/ubuntu_network_interfaces
+```
+
+<b>Endpoint devices: Cisco vIOS Switch</b>
+
+```bash
+Cisco-Switch#show etherchannel summary
+Number of channel-groups in use: 1
+Number of aggregators:           1
+Group  Port-channel  Protocol    Ports
+------+-------------+-----------+-----------------------------------------------
+13     Po13(SU)        LACP      Gi0/1(P)    Gi0/3(P)
+
+Leaf-3# show PortChannel summary
+Flags(oper-status):  D - Down U - Up (portchannel) P - Up in portchannel (members)
+----------------------------------------------------------------------------------------------------------------------------
+Group               PortChannel                   Type                Protocol       Member Ports
+----------------------------------------------------------------------------------------------------------------------------
+1                   PortChannel1   (U)            Eth                 LACP           Ethernet4(P)
+100                 PortChannel100 (U)            Eth                 LACP           Ethernet1(P)
+                                                                                   Ethernet3(P)
+
+Leaf-3# show mclag brief
+Domain ID            : 1
+Role                 : standby
+Session Status       : up
+Peer Link Status     : up
+Source Address       : 192.168.0.3
+Peer Address         : 192.168.0.1
+Peer Link            : PortChannel100
+Keepalive Interval   : 1 secs
+Session Timeout      : 30 secs
+Delay Restore        : 300 secs
+System Mac           : 50:00:00:08:00:00
+Mclag System Mac     : 00:00:00:22:22:22
+Gateway Mac          : aa:bb:aa:bb:aa:bb
+Number of MLAG Interfaces:1
+-----------------------------------------------------------
+MLAG Interface       Local/Remote Status
+-----------------------------------------------------------
+PortChannel1             up/up
+```
+
+
+configure OSPF with import in file jinja
+
+
 # Preference
 * [ ] [Love2Network](https://www.youtube.com/@Love2Network)
+

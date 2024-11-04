@@ -236,3 +236,83 @@ interface Ethernet 2
 end
 write mem
 !
+
+{# Leaf-1 #}
+configure terminal
+!
+interface PortChannel 100
+ no shutdown
+!
+interface Ethernet1
+ description Peer-Link-to-Leaf-3
+ channel-group 100
+ no shutdown
+!
+interface Ethernet3
+ description Peer-Link-to-Leaf-3
+ channel-group 100
+ no shutdown
+!
+!
+mclag gateway-mac aa:bb:aa:bb:aa:bb
+!
+mclag domain 1
+ source-ip 192.168.0.1
+ peer-ip 192.168.0.3
+ peer-link PortChannel100
+ mclag-system-mac 00:00:00:22:22:22
+!
+interface PortChannel 1
+ description To-Ubuntu-Server
+ lacp interval fast
+ mclag 1
+ no shutdown
+!
+interface Ethernet4
+ description Po1-Ubuntu
+ channel-group 1 mode active
+ no shutdown
+!
+end
+write mem
+!
+
+{# Leaf-3 #}
+configure terminal
+!
+interface PortChannel 100
+ no shutdown
+!
+interface Ethernet1
+ description Peer-Link-to-Leaf-1
+ channel-group 100
+ no shutdown
+!
+interface Ethernet3
+ description Peer-Link-to-Leaf-1
+ channel-group 100
+ no shutdown
+!
+!
+mclag gateway-mac aa:bb:aa:bb:aa:bb
+!
+mclag domain 1
+ source-ip 192.168.0.3
+ peer-ip 192.168.0.1
+ peer-link PortChannel100
+ mclag-system-mac 00:00:00:22:22:22
+!
+interface PortChannel 1
+ description To-Ubuntu-Server
+ mclag 1
+ no shutdown
+!
+interface Ethernet4
+ description Po1-Ubuntu
+ channel-group 1 mode active
+ no shutdown
+!
+end
+write mem
+!
+
