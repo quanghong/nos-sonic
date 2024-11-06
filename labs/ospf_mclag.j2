@@ -237,17 +237,22 @@ end
 write mem
 !
 
+
+{# MCLAG #}
 {# Leaf-1 #}
 configure terminal
 !
 interface PortChannel 100
+description Agg-Port-to-Leaf-3
  no shutdown
 !
+default interface Ethernet1
 interface Ethernet1
  description Peer-Link-to-Leaf-3
  channel-group 100
  no shutdown
 !
+default interface Ethernet3
 interface Ethernet3
  description Peer-Link-to-Leaf-3
  channel-group 100
@@ -263,12 +268,13 @@ mclag domain 1
  mclag-system-mac 00:00:00:22:22:22
 !
 interface PortChannel 1
- description To-Ubuntu-Server
+ description Agg-Port-to-Cisco-Switch
  mclag 1
  no shutdown
 !
+default interface Ethernet4
 interface Ethernet4
- description Po1-Ubuntu
+ description Po13-Cisco-Switch
  channel-group 1
  no shutdown
 !
@@ -280,13 +286,16 @@ write mem
 configure terminal
 !
 interface PortChannel 100
+ description Agg-Port-to-Leaf-1
  no shutdown
 !
+default interface Ethernet1
 interface Ethernet1
  description Peer-Link-to-Leaf-1
  channel-group 100
  no shutdown
 !
+default interface Ethernet3
 interface Ethernet3
  description Peer-Link-to-Leaf-1
  channel-group 100
@@ -302,15 +311,33 @@ mclag domain 1
  mclag-system-mac 00:00:00:22:22:22
 !
 interface PortChannel 1
- description To-Ubuntu-Server
+ description Agg-Port-to-Cisco-Switch
  mclag 1
  no shutdown
 !
+default interface Ethernet4
 interface Ethernet4
- description Po1-Ubuntu
+ description Po13-Cisco-Switch
  channel-group 1
  no shutdown
 !
 end
 write mem
+!
+
+{# Cisco-Switch #}
+default int GigabitEthernet0/1
+interface GigabitEthernet0/1
+ description Po1-Leaf-1-Leaf-3
+ channel-group 13 mode active
+ no shutdown
+!
+default int GigabitEthernet0/3
+interface GigabitEthernet0/3
+ description Po1-Leaf-1-Leaf-3
+ channel-group 13 mode active
+ no shutdown
+!
+interface Port-channel 13
+ description Agg-Port-to-Leaf-1-Leaf-3
 !
