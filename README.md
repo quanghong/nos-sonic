@@ -277,6 +277,7 @@ rtt min/avg/max/mdev = 4.842/7.429/11.234/2.292 ms
 ```
 
 ## MCLAG
+### LACP & Multi Chassis Link Aggreagation Group
 <b>Endpoint devices: Ubuntu Server 18.04</b>
 
 Configure LACP with netplan. => <b>FAIL. Port members aren't bundled.</b>
@@ -386,7 +387,63 @@ MLAG Interface       Local/Remote Status
 -----------------------------------------------------------
 PortChannel1             up/up
 ```
+<b>Preference</b>
+* [Dell EMC MCLAG](https://www.dell.com/support/kbdoc/en-us/000191811/dell-emc-networking-sonic-os-how-to-configure-multi-chassis-lag-mclag-in-dell-mf-cli)
 
+
+### Static Anycast Gateway
+```bash
+Leaf-1# show ip static-anycast-gateway
+Configured Anycast Gateway MAC address: 00:00:22:22:22:22
+IPv4 Anycast Gateway MAC address: enable
+Total number of gateway: 1
+Total number of gateway admin UP: 1
+Total number of gateway oper UP: 1
+Interfaces Gateway Address      Vrf        Admin/Oper
+---------- ---------------      ------     ----------
+Vlan10     10.1.1.254/24                      up/up
+
+Cisco-Switch#show mac address-table
+          Mac Address Table
+-------------------------------------------
+Vlan    Mac Address       Type        Ports
+----    -----------       --------    -----
+   1    0000.0022.2222    DYNAMIC     Po13
+  10    0000.2222.2222    DYNAMIC     Po13
+  10    0050.7966.6804    DYNAMIC     Gi1/0
+
+Cisco-Switch#show lacp neighbor
+Channel group 13 neighbors
+Gi0/1     SP      255       0000.0022.2222 2036s    0x0    0x1    0x5     0x34
+Gi0/3     SA      255       0000.0022.2222  21s    0x0    0x1    0x5     0x3D
+```
+<b>Preference</b>
+* [Dell EMC SAG](https://www.dell.com/support/kbdoc/en-us/000223335/dell-networking-sonic-how-to-configure-static-anycast-gateway-anycast-address)
+
+
+
+Leaf-1# show ip route vrf Vrf-Tenant-1
+Codes:  K - kernel route, C - connected, S - static, B - BGP, O - OSPF
+        > - selected route, * - FIB route, q - queued route, r - rejected route, # - not installed in hardware
+       Destination                  Gateway                                                Dist/Metric   Uptime
+-------------------------------------------------------------------------------------------------------------------
+ C>*   10.1.1.0/24                  Direct                        Vlan10                   0/0           00:34:32
+ C>*   11.1.1.0/24                  Direct                        Vlan11                   0/0           01:34:07
+
+
+Leaf-1# show ip static-anycast-gateway
+Configured Anycast Gateway MAC address: 00:00:22:22:22:22
+IPv4 Anycast Gateway MAC address: enable
+Total number of gateway: 2
+Total number of gateway admin UP: 2
+Total number of gateway oper UP: 2
+Interfaces Gateway Address      Vrf        Admin/Oper
+---------- ---------------      ------     ----------
+Vlan10     10.1.1.254/24        Vrf-Tenant-1    up/up
+Vlan11     11.1.1.254/24        Vrf-Tenant-1    up/up
+
+
+https://www.dell.com/support/kbdoc/en-us/000217901/dell-networking-sonic-how-to-create-vlan-and-assign-it-to-trunk-access-switchports
 
 configure OSPF with import in file jinja
 
