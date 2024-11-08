@@ -1,10 +1,4 @@
 {# Leaf-1 #}
-interface PortChannel 1
- switchport trunk allowed Vlan add 10,11
-!
-interface PortChannel 100
- switchport trunk allowed Vlan add 10,11
-!
 ip anycast-mac-address 00:00:22:22:22:22
 ip anycast-address enable
 !
@@ -15,15 +9,21 @@ interface Vlan10
 interface Vlan11
  description "Red Servers VLAN"
  ip anycast-address 11.1.1.254/24
+!
+interface PortChannel 1
+ switchport trunk allowed Vlan add 10,11
+!
+interface PortChannel 100
+ switchport trunk allowed Vlan add 10,11
+!
+default interface Ethernet5
+ interface Ethernet5
+ description "Link to PC-1"
+ switchport access vlan 11
+ no shutdown
 !
 
 {# Leaf-3 #}
-interface PortChannel 1
- switchport trunk allowed Vlan add 10,11
-!
-interface PortChannel 100
- switchport trunk allowed Vlan add 10,11
-!
 ip anycast-mac-address 00:00:22:22:22:22
 ip anycast-address enable
 !
@@ -34,6 +34,12 @@ interface Vlan10
 interface Vlan11
  description "Red Servers VLAN"
  ip anycast-address 11.1.1.254/24
+!
+interface PortChannel 1
+ switchport trunk allowed Vlan add 10,11
+!
+interface PortChannel 100
+ switchport trunk allowed Vlan add 10,11
 !
 
 {# Cisco-Switch #}
@@ -51,4 +57,13 @@ interface GigabitEthernet1/0
  switchport host
  switchport access vlan 10
  no shutdown
+!
+
+{# Leaf-2 #}
+ip anycast-mac-address 00:00:12:12:12:12
+ip anycast-address enable
+!
+interface Vlan12
+ description "Blue Servers VLAN"
+ ip anycast-address 12.1.1.254/24
 !
