@@ -1,17 +1,55 @@
-{# Create VTEP1 #}
+{# Create VRF #}
 {# Leaf-1 #}
 ip vrf Vrf-Tenant-1
 !
 interface Vlan10
+ no ip anycast-address 10.1.1.254/24
  ip vrf forwarding Vrf-Tenant-1
+ ip anycast-address 10.1.1.254/24
 !
 interface Vlan11
+ no ip anycast-address 11.1.1.254/24
  ip vrf forwarding Vrf-Tenant-1
+ ip anycast-address 11.1.1.254/24
 !
 interface Vlan2000
  ip vrf forwarding Vrf-Tenant-1
  ipv6 enable
 !
+{# Leaf-3 #}
+ip vrf Vrf-Tenant-1
+!
+interface Vlan10
+ no ip anycast-address 10.1.1.254/24
+ ip vrf forwarding Vrf-Tenant-1
+ ip anycast-address 10.1.1.254/24
+!
+interface Vlan11
+ no ip anycast-address 11.1.1.254/24
+ ip vrf forwarding Vrf-Tenant-1
+ ip anycast-address 11.1.1.254/24
+!
+interface Vlan2000
+ ip vrf forwarding Vrf-Tenant-1
+ ipv6 enable
+!
+{# Leaf-2 #}
+ip vrf Vrf-Tenant-1
+!
+interface Vlan12
+ no ip anycast-address 12.1.1.254/24
+ ip vrf forwarding Vrf-Tenant-1
+ ip anycast-address 12.1.1.254/24
+!
+interface Vlan2000
+ ip vrf forwarding Vrf-Tenant-1
+ ipv6 enable
+!
+
+
+#### Done here
+
+{# Create VTEP1 #}
 interface Loopback 1
  description "source ip for VXLAN interface"
  ip address 100.1.1.1/32
@@ -24,18 +62,6 @@ interface vxlan vtep1
  map vni 200000 vrf Vrf-Tenant-1
 !
 {# Leaf-3 #}
-ip vrf Vrf-Tenant-1
-!
-interface Vlan10
- description "Green Servers VLAN"
- ip vrf forwarding Vrf-Tenant-1
- ip anycast-address 10.1.1.254/24
-!
-interface Vlan2000
- description "IRB VLAN"
- ip vrf forwarding Vrf-Tenant-1
- ipv6 enable
-!
 interface Loopback 1
  description "source ip for VXLAN interface"
  ip address 100.3.3.3/32
