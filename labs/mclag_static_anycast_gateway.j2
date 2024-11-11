@@ -67,3 +67,9 @@ interface Vlan12
  description "Blue Servers VLAN"
  ip anycast-address 12.1.1.254/24
 !
+default interface Ethernet5
+ interface Ethernet5
+ description "Link to PC-3"
+ switchport access vlan 12
+ no shutdown
+!
