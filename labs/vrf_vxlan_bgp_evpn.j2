@@ -1,3 +1,183 @@
+{# BGP ipv4 unicast neighbors #}
+{# Leaf-1 #}
+interface Ethernet0
+ ipv6 enable
+ exit
+!
+interface Ethernet2
+ ipv6 enable
+ exit
+!
+router bgp 65101
+ router-id 192.168.0.1
+ !
+ address-family ipv4 unicast
+  exit
+ !
+ neighbor interface Ethernet0
+  description AS65000-Spine-1-Ethernet0
+  remote-as external
+  !
+  address-family ipv4 unicast
+   activate
+ !
+ neighbor interface Ethernet2
+  description AS65000-Spine-2-Ethernet2
+  remote-as external
+  !
+  address-family ipv4 unicast
+   activate
+ !
+end
+!
+{# Leaf-3 #}
+interface Ethernet0
+ ipv6 enable
+ exit
+!
+interface Ethernet2
+ ipv6 enable
+ exit
+!
+router bgp 65101
+ router-id 192.168.0.3
+ !
+ address-family ipv4 unicast
+  exit
+ !
+ neighbor interface Ethernet0
+  description AS65000-Spine-1-Ethernet0
+  remote-as external
+  !
+  address-family ipv4 unicast
+   activate
+ !
+ neighbor interface Ethernet2
+  description AS65000-Spine-2-Ethernet2
+  remote-as external
+  !
+  address-family ipv4 unicast
+   activate
+ !
+end
+!
+{# Leaf-2 #}
+interface Ethernet4
+ ipv6 enable
+ exit
+!
+interface Ethernet2
+ ipv6 enable
+ exit
+!
+router bgp 65102
+ router-id 192.168.0.2
+ !
+ address-family ipv4 unicast
+  exit
+ !
+ neighbor interface Ethernet4
+  description AS65000-Spine-1-Ethernet4
+  remote-as external
+  !
+  address-family ipv4 unicast
+   activate
+ !
+ neighbor interface Ethernet2
+  description AS65000-Spine-2-Ethernet2
+  remote-as external
+  !
+  address-family ipv4 unicast
+   activate
+ !
+end
+!
+{# Spine-1 #}
+interface Ethernet0
+ ipv6 enable
+ exit
+!
+interface Ethernet3
+ ipv6 enable
+ exit
+!
+interface Ethernet4
+ ipv6 enable
+ exit
+!
+router bgp 65000
+ router-id 192.168.0.4
+ !
+ address-family ipv4 unicast
+  exit
+ !
+ neighbor interface Ethernet0
+  description AS65101-Leaf-1-Ethernet0
+  remote-as external
+  !
+  address-family ipv4 unicast
+   activate
+ !
+ neighbor interface Ethernet3
+  description AS65101-Leaf-3-Ethernet3
+  remote-as external
+  !
+  address-family ipv4 unicast
+   activate
+ !
+ neighbor interface Ethernet4
+  description AS65102-Leaf-2-Ethernet4
+  remote-as external
+  !
+  address-family ipv4 unicast
+   activate
+ !
+end
+!
+{# Spine-2 #}
+interface Ethernet1
+ ipv6 enable
+ exit
+!
+interface Ethernet3
+ ipv6 enable
+ exit
+!
+interface Ethernet2
+ ipv6 enable
+ exit
+!
+router bgp 65000
+ router-id 192.168.0.5
+ !
+ address-family ipv4 unicast
+  exit
+ !
+ neighbor interface Ethernet1
+  description AS65101-Leaf-1-Ethernet1
+  remote-as external
+  !
+  address-family ipv4 unicast
+   activate
+ !
+ neighbor interface Ethernet3
+  description AS65101-Leaf-3-Ethernet3
+  remote-as external
+  !
+  address-family ipv4 unicast
+   activate
+ !
+ neighbor interface Ethernet2
+  description AS65102-Leaf-2-Ethernet2
+  remote-as external
+  !
+  address-family ipv4 unicast
+   activate
+ !
+end
+!
+
+
 {# Create VRF #}
 {# Leaf-1 #}
 ip vrf Vrf-Tenant-1
@@ -12,10 +192,6 @@ interface Vlan11
  ip vrf forwarding Vrf-Tenant-1
  ip anycast-address 11.1.1.254/24
 !
-interface Vlan2000
- ip vrf forwarding Vrf-Tenant-1
- ipv6 enable
-!
 {# Leaf-3 #}
 ip vrf Vrf-Tenant-1
 !
@@ -29,10 +205,6 @@ interface Vlan11
  ip vrf forwarding Vrf-Tenant-1
  ip anycast-address 11.1.1.254/24
 !
-interface Vlan2000
- ip vrf forwarding Vrf-Tenant-1
- ipv6 enable
-!
 {# Leaf-2 #}
 ip vrf Vrf-Tenant-1
 !
@@ -41,374 +213,177 @@ interface Vlan12
  ip vrf forwarding Vrf-Tenant-1
  ip anycast-address 12.1.1.254/24
 !
-interface Vlan2000
+
+
+{# Create VLAN IRB & VXLAN VTEP #}
+{# Leaf-1 #}
+interface Vlan123
+ description "IRB VLAN"
  ip vrf forwarding Vrf-Tenant-1
  ipv6 enable
 !
-
-
-#### Done here
-
-{# Create VTEP1 #}
 interface Loopback 1
  description "source ip for VXLAN interface"
  ip address 100.1.1.1/32
 !
 interface vxlan vtep1
  source-ip 100.1.1.1
- map vni 10010 vlan 10
- map vni 10011 vlan 11
- map vni 200000 vlan 2000
- map vni 200000 vrf Vrf-Tenant-1
+ map vni 123000 vlan 123
+ map vni 123000 vrf Vrf-Tenant-1
 !
 {# Leaf-3 #}
+interface Vlan123
+ description "IRB VLAN"
+ ip vrf forwarding Vrf-Tenant-1
+ ipv6 enable
+!
 interface Loopback 1
  description "source ip for VXLAN interface"
  ip address 100.3.3.3/32
 !
-interface vxlan vtep1
+interface vxlan vtep3
  source-ip 100.3.3.3
- map vni 10010 vlan 10
- map vni 200000 vlan 2000
- map vni 200000 vrf Vrf-Tenant-1
+ map vni 123000 vlan 123
+ map vni 123000 vrf Vrf-Tenant-1
 !
-interface PortChannel 1
- switchport trunk allowed Vlan add 10
-!
-interface PortChannel 100
- switchport trunk allowed Vlan add 10
-!
-
-{# Cisco-Switch #}
-vlan 10
-!
-interface GigabitEthernet1/0
- switchport host
- switchport access vlan 10
- no shutdown
-!
-interface Port-channel13
- description Agg-Port-to-Leaf-1-Leaf-3
- switchport trunk encapsulation dot1q
- switchport mode trunk
- switchport trunk allowed Vlan add 10
-end
-
-{# Create more vlans to map to vtep1, vrf Tenant-1 #}
-{# Leaf-1 #}
-interface Vlan11
- description "Red Servers VLAN"
- ip vrf forwarding Vrf-Tenant-1
- ip anycast-address 11.1.1.254/24
-!
-interface vxlan vtep1
- map vni 10011 vlan 11
-!
-interface PortChannel 1
- switchport trunk allowed Vlan add 11
- !
-interface PortChannel 100
- switchport trunk allowed Vlan add 11
-!
-end
-!
-{# Leaf-3 #}
-interface Vlan11
- description "Red Servers VLAN"
- ip vrf forwarding Vrf-Tenant-1
- ip anycast-address 11.1.1.254/24
-!
-interface vxlan vtep1
- map vni 10011 vlan 11
-!
-interface PortChannel 1
- switchport trunk allowed Vlan add 11
- !
-interface PortChannel 100
- switchport trunk allowed Vlan add 11
-!
-end
-!
-{# Cisco-Switch #}
-vlan 11
-!
-interface Port-channel13
- switchport trunk allowed Vlan add 11
-end
-!
-{# Create vlan interface in both Leafs and map into vrf. Shutdown 1 interface to see if traffic still be sent #}
-{# Leaf-1 #}
-default interface Ethernet5
-interface Ethernet5
- description "Link to PC-1"
- ip vrf forwarding Vrf-Tenant-1
-
-
-
-
 {# Leaf-2 #}
-ip vrf Vrf1
-ip anycast-mac-address 00:00:22:22:22:22
-ip anycast-address enable
-!
-interface Vlan10
- description "Green Servers VLAN"
- ip vrf forwarding Vrf1
- ip anycast-address 10.1.1.254/24
-!
-interface Vlan11
- description "Green Servers VLAN"
- ip vrf forwarding Vrf1
- ip anycast-address 11.1.1.254/24
-!
-interface Vlan2000
+interface Vlan123
  description "IRB VLAN"
- ip vrf forwarding Vrf1
+ ip vrf forwarding Vrf-Tenant-1
  ipv6 enable
 !
 interface Loopback 1
  description "source ip for VXLAN interface"
  ip address 100.2.2.2/32
 !
-interface vxlan vtep1
+interface vxlan vtep2
  source-ip 100.2.2.2
- map vni 10010 vlan 10
- map vni 10011 vlan 11
- map vni 200000 vlan 2000
- map vni 200000 vrf Vrf1
-!
-default interface Ethernet0
-interface Ethernet0
- description "Link to PC-2"
- switchport access Vlan 10
- no shutdown
-!
-default interface Ethernet5
-interface Ethernet5
- description "Link to PC-3"
- switchport access Vlan 11
- no shutdown
+ map vni 123000 vlan 123
+ map vni 123000 vrf Vrf-Tenant-1
 !
 
-{# BGP #}
 
+{# BGP L2VPN EVPN neighbors #}
 {# Spine-1 #}
 router bgp 65000
  !
  address-family l2vpn evpn
  !
- neighbor 192.168.0.5
-  remote-as 65000
-  !
+ neighbor interface Ethernet0
   address-family l2vpn evpn
    activate
  !
- neighbor 192.168.0.1
-  remote-as 65101
-  !
+ neighbor interface Ethernet3
   address-family l2vpn evpn
    activate
  !
- neighbor 192.168.0.3
-  remote-as 65101
-  !
+ neighbor interface Ethernet4
   address-family l2vpn evpn
    activate
- !
- neighbor 192.168.0.2
-  remote-as 65102
-  !
-  address-family l2vpn evpn
-   activate
-   end
 !
-write memory
-
 {# Spine-2 #}
 router bgp 65000
  !
  address-family l2vpn evpn
  !
- neighbor 192.168.0.4
-  remote-as 65000
-  !
+ neighbor interface Ethernet1
   address-family l2vpn evpn
    activate
  !
- neighbor 192.168.0.1
-  remote-as 65101
-  !
+ neighbor interface Ethernet3
   address-family l2vpn evpn
    activate
  !
- neighbor 192.168.0.3
-  remote-as 65101
-  !
+ neighbor interface Ethernet2
   address-family l2vpn evpn
    activate
- !
- neighbor 192.168.0.2
-  remote-as 65102
-  !
-  address-family l2vpn evpn
-   activate
-   end
 !
-write memory
-
 {# Leaf-1 #}
 router bgp 65101
  !
  address-family l2vpn evpn
-  advertise-all-vni
+  exit
  !
- neighbor 192.168.0.4
-  remote-as 65000
-  !
+ neighbor interface Ethernet2
   address-family l2vpn evpn
    activate
-   exit
-   !
-  !
- neighbor 192.168.0.5
-  remote-as 65000
-  !
-  address-family l2vpn evpn
-   activate
-   exit
-   !
-  !
- neighbor 192.168.0.3
-  remote-as 65101
-  !
-  address-family l2vpn evpn
-   activate
-   exit
-   !
  !
-  neighbor 192.168.0.2
-  remote-as 65102
-  !
+ neighbor interface Ethernet4
   address-family l2vpn evpn
    activate
-   exit
-   !
- !
 !
-router bgp 65101 vrf Vrf1
- router-id 192.168.1.1
- !
- address-family ipv4 unicast
-  redistribute ospf
- !
- address-family l2vpn evpn
-  advertise ipv4 unicast
-  end
-  !
-!
-write memory
-
 {# Leaf-2 #}
-router bgp 65102
+router bgp 65101
  !
  address-family l2vpn evpn
-  advertise-all-vni
+  exit
  !
- neighbor 192.168.0.4
-  remote-as 65000
-  !
+ neighbor interface Ethernet4
   address-family l2vpn evpn
    activate
-   exit
-   !
-  !
- neighbor 192.168.0.5
-  remote-as 65000
-  !
-  address-family l2vpn evpn
-   activate
-   exit
-   !
-  !
- neighbor 192.168.0.1
-  remote-as 65101
-  !
-  address-family l2vpn evpn
-   activate
-   exit
-   !
  !
-  neighbor 192.168.0.3
-  remote-as 65101
-  !
+ neighbor interface Ethernet2
   address-family l2vpn evpn
    activate
-   exit
-   !
- !
 !
-router bgp 65102 vrf Vrf1
- router-id 192.168.2.2
- !
- address-family ipv4 unicast
-  redistribute ospf
- !
- address-family l2vpn evpn
-  advertise ipv4 unicast
-  end
-  !
-!
-write memory
-
-
 {# Leaf-3 #}
 router bgp 65101
  !
  address-family l2vpn evpn
-  advertise-all-vni
+  exit
  !
- neighbor 192.168.0.4
-  remote-as 65000
-  !
+ neighbor interface Ethernet0
   address-family l2vpn evpn
    activate
-   exit
-   !
-  !
- neighbor 192.168.0.5
-  remote-as 65000
-  !
-  address-family l2vpn evpn
-   activate
-   exit
-   !
-  !
- neighbor 192.168.0.1
-  remote-as 65101
-  !
-  address-family l2vpn evpn
-   activate
-   exit
-   !
  !
-  neighbor 192.168.0.2
-  remote-as 65102
-  !
+ neighbor interface Ethernet2
   address-family l2vpn evpn
    activate
-   exit
-   !
- !
 !
-router bgp 65101 vrf Vrf1
- router-id 192.168.3.3
+
+
+{# Advertise BGP source interface VXLAN into ipv4 to bring up vxlan tunnel endpoints connectivity #}
+{# Leaf-1 #}
+router bgp 65101
  !
  address-family ipv4 unicast
-  redistribute ospf
+  network 100.1.1.1/32
  !
  address-family l2vpn evpn
-  advertise ipv4 unicast
-  end
-  !
+  advertise-all-vni
+ !
 !
-write memory
+interface vxlan vtep1
+ map vni 100010 vlan 10
+ map vni 100011 vlan 11
+ !
+!
+{# Leaf-2 #}
+router bgp 65102
+ !
+ address-family ipv4 unicast
+  network 100.2.2.2/32
+ !
+ address-family l2vpn evpn
+  advertise-all-vni
+ !
+!
+interface vxlan vtep2
+ map vni 100012 vlan 12
+ !
+!
+{# Leaf-3 #}
+router bgp 65101
+ !
+ address-family ipv4 unicast
+  network 100.3.3.3/32
+ !
+ address-family l2vpn evpn
+  advertise-all-vni
+ !
+!
+interface vxlan vtep3
+ map vni 100010 vlan 10
+ map vni 100011 vlan 11
+ !
+!
