@@ -10,11 +10,14 @@ interface Vlan11
  description "Red Servers VLAN"
  ip anycast-address 11.1.1.254/24
 !
+interface Vlan12
+ description "VLAN on Leaf-2"
+!
 interface PortChannel 1
- switchport trunk allowed Vlan add 10,11
+ switchport trunk allowed Vlan add 10,11,12
 !
 interface PortChannel 100
- switchport trunk allowed Vlan add 10,11
+ switchport trunk allowed Vlan add 10,11,12
 !
 default interface Ethernet5
  interface Ethernet5
@@ -35,11 +38,14 @@ interface Vlan11
  description "Red Servers VLAN"
  ip anycast-address 11.1.1.254/24
 !
+interface Vlan12
+ description "VLAN on Leaf-2"
+!
 interface PortChannel 1
- switchport trunk allowed Vlan add 10,11
+ switchport trunk allowed Vlan add 10,11,12
 !
 interface PortChannel 100
- switchport trunk allowed Vlan add 10,11
+ switchport trunk allowed Vlan add 10,11,12
 !
 
 {# Cisco-Switch #}
@@ -52,6 +58,7 @@ interface Port-channel13
  switchport mode trunk
  switchport trunk allowed Vlan add 10
  switchport trunk allowed Vlan add 11
+ switchport trunk allowed Vlan add 12
 !
 interface GigabitEthernet1/0
  switchport host
@@ -70,6 +77,12 @@ interface Vlan12
 default interface Ethernet5
  interface Ethernet5
  description "Link to PC-3"
+ switchport access vlan 12
+ no shutdown
+!
+default interface Ethernet0
+ interface Ethernet0
+ description "Link to PC-2"
  switchport access vlan 12
  no shutdown
 !
