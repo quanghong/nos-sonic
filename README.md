@@ -388,10 +388,12 @@ MLAG Interface       Local/Remote Status
 PortChannel1             up/up
 ```
 <b>Preference</b>
+* [Dell EMC LACP](https://www.dell.com/support/kbdoc/en-ae/000217739/dell-networking-sonic-static-and-lacp-portchannel)
 * [Dell EMC MCLAG](https://www.dell.com/support/kbdoc/en-us/000191811/dell-emc-networking-sonic-os-how-to-configure-multi-chassis-lag-mclag-in-dell-mf-cli)
 
 
 ### Static Anycast Gateway
+SAG help us with redundant gateway, packets is transmit without affecting by shutting down port from one Leaf (Leaf-1).
 ```bash
 Leaf-1# show ip static-anycast-gateway
 Configured Anycast Gateway MAC address: 00:00:22:22:22:22
@@ -421,33 +423,104 @@ Gi0/3     SA      255       0000.0022.2222  21s    0x0    0x1    0x5     0x3D
 * [Dell EMC SAG](https://www.dell.com/support/kbdoc/en-us/000223335/dell-networking-sonic-how-to-configure-static-anycast-gateway-anycast-address)
 
 
+### BGP ipv4 unicast
+```bash
+Leaf-1# show bgp ipv4 unicast summary
+BGP router identifier 192.168.0.1, local AS number 65101
+Neighbor      V   AS      MsgRcvd   MsgSent   InQ     OutQ    Up/Down         State/PfxRcd
+Ethernet0     4   65000   858       700       0       0       00:32:03        1
+Ethernet2     4   65000   866       717       0       0       00:31:20        1
+```
 
-Leaf-1# show ip route vrf Vrf-Tenant-1
+### VRF
+We want to map multiple vlans on seperate routing tables. Like we want to create seperate routing information for each customer run multiple vlans. Another word, VRF is a Tenant which run through VXLAN fabric/tunnel.
+```bash
+Leaf-1# show ip vrf
+VRF-NAME            INTERFACES
+----------------------------------------------------------------
+Vrf-Tenant-1        Vlan10
+                    Vlan11
+```
+
+### VLAN IRB
+Create VLAN IRB and VTEP.
+```bash
+Leaf-2# show vxlan vlanvnimap
+VLAN      VNI
+======    =====
+Vlan12    100012
+Vlan123   123000
+Total count :    2
+
+Leaf-2# show vxlan vrfvnimap
+VRF       VNI
+======    =====
+Vrf-Tenant-1  123000
+Total count :    1
+```
+
+### BGP L2VPN EVPN
+Enable L2VPN EVPN on BGP interface neighbors.
+```bash
+Spine-1# show bgp l2vpn evpn summary
+BGP router identifier 192.168.0.4, local AS number 65000
+Neighbor      V   AS      MsgRcvd   MsgSent   InQ     OutQ    Up/Down         State/PfxRcd
+Ethernet0     4   65101   1216      1439      0       0       00:46:39        10
+Ethernet3     4   65101   1022      1326      0       0       00:38:45        10
+Ethernet4     4   65102   1587      1534      0       0       00:46:17        4 
+Total number of neighbors 3
+Total number of neighbors established 3
+
+Spine-2# show bgp l2vpn evpn summary
+BGP router identifier 192.168.0.5, local AS number 65000
+Neighbor      V   AS      MsgRcvd   MsgSent   InQ     OutQ    Up/Down         State/PfxRcd
+Ethernet1     4   65101   1225      1436      0       0       00:45:39        10
+Ethernet2     4   65102   1604      1550      0       0       00:45:28        4 
+Ethernet3     4   65101   1020      1337      0       0       00:38:20        10
+Total number of neighbors 3
+Total number of neighbors established 3
+```
+
+We need to advertise source interface VXLAN into BGP ipv4 unicast to bring up vxlan tunnel endpoints connectivity.
+```bash
+Leaf-2# show vxlan tunnel
+Name                SIP               DIP                 source      operstatus
+=======             ======            ======              ======      ========
+EVPN_100.1.1.1      100.2.2.2         100.1.1.1           EVPN        oper_up
+EVPN_100.3.3.3      100.2.2.2         100.3.3.3           EVPN        oper_up
+
+```
+
+Advertise VRF routes to remote sites through BGP L2VPN EVPN VXLAN tunnel.
+```bash
+Leaf-2# show ip route vrf Vrf-Tenant-1
 Codes:  K - kernel route, C - connected, S - static, B - BGP, O - OSPF
         > - selected route, * - FIB route, q - queued route, r - rejected route, # - not installed in hardware
        Destination                  Gateway                                                Dist/Metric   Uptime
 -------------------------------------------------------------------------------------------------------------------
- C>*   10.1.1.0/24                  Direct                        Vlan10                   0/0           00:34:32
- C>*   11.1.1.0/24                  Direct                        Vlan11                   0/0           01:34:07
+ B>*   10.1.1.0/24                  via 100.1.1.1                 Vlan123                  20/0          00:54:05
+ B>*   10.1.1.1/32                  via 100.1.1.1                 Vlan123                  20/0          00:01:47
+   *                                via 100.3.3.3                 Vlan123                    
+ B>*   11.1.1.0/24                  via 100.1.1.1                 Vlan123                  20/0          00:54:05
+ B>*   11.1.1.1/32                  via 100.1.1.1                 Vlan123                  20/0          00:28:54
+   *                                via 100.3.3.3                 Vlan123                    
+ C>*   12.1.1.0/24                  Direct                        Vlan12                   0/0           09:38:47
 
+VPCS> ping 12.1.1.1 -t 5
+84 bytes from 12.1.1.1 icmp_seq=1 ttl=62 time=82.678 ms
+84 bytes from 12.1.1.1 icmp_seq=2 ttl=62 time=87.907 ms
+84 bytes from 12.1.1.1 icmp_seq=3 ttl=62 time=176.428 ms
+84 bytes from 12.1.1.1 icmp_seq=4 ttl=62 time=162.203 ms
+84 bytes from 12.1.1.1 icmp_seq=5 ttl=62 time=119.945 ms
 
-Leaf-1# show ip static-anycast-gateway
-Configured Anycast Gateway MAC address: 00:00:22:22:22:22
-IPv4 Anycast Gateway MAC address: enable
-Total number of gateway: 2
-Total number of gateway admin UP: 2
-Total number of gateway oper UP: 2
-Interfaces Gateway Address      Vrf        Admin/Oper
----------- ---------------      ------     ----------
-Vlan10     10.1.1.254/24        Vrf-Tenant-1    up/up
-Vlan11     11.1.1.254/24        Vrf-Tenant-1    up/up
-
-
-https://www.dell.com/support/kbdoc/en-us/000217901/dell-networking-sonic-how-to-create-vlan-and-assign-it-to-trunk-access-switchports
-
-configure OSPF with import in file jinja
-
+VPCS> trace 12.1.1.1
+trace to 12.1.1.1, 8 hops max, press Ctrl+C to stop
+ 1   11.1.1.254   25.162 ms  8.391 ms  2.277 ms
+ 2   12.1.1.254   98.766 ms  70.185 ms  27.872 ms
+ 3   *12.1.1.1   59.812 ms (ICMP type:3, code:3, Destination port unreachable)
+```
 
 # Preference
-* [ ] [Love2Network](https://www.youtube.com/@Love2Network)
-
+* [Dell SONiC](https://www.dell.com/support/home/en-us/product-support/product/enterprise-sonic-distribution/overview)
+* [Love2Network](https://www.youtube.com/@Love2Network)
+* [GodofNetworking](https://www.youtube.com/@GodofNetworking)

@@ -11,9 +11,6 @@ interface Ethernet2
 router bgp 65101
  router-id 192.168.0.1
  !
- address-family ipv4 unicast
-  exit
- !
  neighbor interface Ethernet0
   description AS65000-Spine-1-Ethernet0
   remote-as external
@@ -42,9 +39,6 @@ interface Ethernet2
 router bgp 65101
  router-id 192.168.0.3
  !
- address-family ipv4 unicast
-  exit
- !
  neighbor interface Ethernet0
   description AS65000-Spine-1-Ethernet0
   remote-as external
@@ -72,9 +66,6 @@ interface Ethernet2
 !
 router bgp 65102
  router-id 192.168.0.2
- !
- address-family ipv4 unicast
-  exit
  !
  neighbor interface Ethernet4
   description AS65000-Spine-1-Ethernet4
@@ -107,9 +98,6 @@ interface Ethernet4
 !
 router bgp 65000
  router-id 192.168.0.4
- !
- address-family ipv4 unicast
-  exit
  !
  neighbor interface Ethernet0
   description AS65101-Leaf-1-Ethernet0
@@ -149,9 +137,6 @@ interface Ethernet2
 !
 router bgp 65000
  router-id 192.168.0.5
- !
- address-family ipv4 unicast
-  exit
  !
  neighbor interface Ethernet1
   description AS65101-Leaf-1-Ethernet1
@@ -231,6 +216,12 @@ interface vxlan vtep1
  map vni 123000 vlan 123
  map vni 123000 vrf Vrf-Tenant-1
 !
+interface PortChannel 1
+ switchport trunk allowed Vlan add 123
+!
+interface PortChannel 100
+ switchport trunk allowed Vlan add 123
+!
 {# Leaf-3 #}
 interface Vlan123
  description "IRB VLAN"
@@ -245,6 +236,12 @@ interface vxlan vtep3
  source-ip 100.3.3.3
  map vni 123000 vlan 123
  map vni 123000 vrf Vrf-Tenant-1
+!
+interface PortChannel 1
+ switchport trunk allowed Vlan add 123
+!
+interface PortChannel 100
+ switchport trunk allowed Vlan add 123
 !
 {# Leaf-2 #}
 interface Vlan123
@@ -266,9 +263,6 @@ interface vxlan vtep2
 {# BGP L2VPN EVPN neighbors #}
 {# Spine-1 #}
 router bgp 65000
- !
- address-family l2vpn evpn
- !
  neighbor interface Ethernet0
   address-family l2vpn evpn
    activate
@@ -280,12 +274,10 @@ router bgp 65000
  neighbor interface Ethernet4
   address-family l2vpn evpn
    activate
+ !
 !
 {# Spine-2 #}
 router bgp 65000
- !
- address-family l2vpn evpn
- !
  neighbor interface Ethernet1
   address-family l2vpn evpn
    activate
@@ -297,13 +289,10 @@ router bgp 65000
  neighbor interface Ethernet2
   address-family l2vpn evpn
    activate
+ !
 !
 {# Leaf-1 #}
 router bgp 65101
- !
- address-family l2vpn evpn
-  exit
- !
  neighbor interface Ethernet2
   address-family l2vpn evpn
    activate
@@ -314,10 +303,6 @@ router bgp 65101
 !
 {# Leaf-2 #}
 router bgp 65101
- !
- address-family l2vpn evpn
-  exit
- !
  neighbor interface Ethernet4
   address-family l2vpn evpn
    activate
@@ -328,10 +313,6 @@ router bgp 65101
 !
 {# Leaf-3 #}
 router bgp 65101
- !
- address-family l2vpn evpn
-  exit
- !
  neighbor interface Ethernet0
   address-family l2vpn evpn
    activate
@@ -342,48 +323,88 @@ router bgp 65101
 !
 
 
-{# Advertise BGP source interface VXLAN into ipv4 to bring up vxlan tunnel endpoints connectivity #}
+{# Advertise source interface VXLAN into BGP ipv4 unicast to bring up vxlan tunnel endpoints connectivity #}
 {# Leaf-1 #}
-router bgp 65101
- !
- address-family ipv4 unicast
-  network 100.1.1.1/32
- !
- address-family l2vpn evpn
-  advertise-all-vni
- !
-!
 interface vxlan vtep1
- map vni 100010 vlan 10
+ map vni 100010 vlan 10 {# map all vni into interface vxlan #}
  map vni 100011 vlan 11
  !
 !
-{# Leaf-2 #}
-router bgp 65102
- !
+router bgp 65101
  address-family ipv4 unicast
+  maximum-paths 32 {# enable multiplath #}
+  maximum-paths ibgp 32 {# enable multiplath #}
+  network 100.1.1.1/32 {# advertise source interface of vxlan #}
+ !
+ address-family l2vpn evpn
+  advertise-all-vni {# advertise all vxlan vni #}
+ !
+!
+{# Leaf-2 #}
+interface vxlan vtep2
+ map vni 100012 vlan 12
+ !
+!
+router bgp 65102
+ address-family ipv4 unicast
+  maximum-paths 32
+  maximum-paths ibgp 32
   network 100.2.2.2/32
  !
  address-family l2vpn evpn
   advertise-all-vni
  !
 !
-interface vxlan vtep2
- map vni 100012 vlan 12
+{# Leaf-3 #}
+interface vxlan vtep3
+ map vni 100010 vlan 10
+ map vni 100011 vlan 11
  !
 !
-{# Leaf-3 #}
 router bgp 65101
  !
  address-family ipv4 unicast
+  maximum-paths 32
+  maximum-paths ibgp 32
   network 100.3.3.3/32
  !
  address-family l2vpn evpn
   advertise-all-vni
  !
 !
-interface vxlan vtep3
- map vni 100010 vlan 10
- map vni 100011 vlan 11
+
+
+{# Advertise VRF through BGP VXLAN EVPN to remote sites #}
+{# Leaf-1 #}
+router bgp 65101 vrf Vrf-Tenant-1
+ address-family ipv4 unicast
+  redistribute connected
+  maximum-paths 32
+  maximum-paths ibgp 32
+  dampening
  !
+ address-family l2vpn evpn
+  advertise ipv4 unicast
+!
+{# Leaf-2 #}
+router bgp 65102 vrf Vrf-Tenant-1
+ address-family ipv4 unicast
+  redistribute connected
+  maximum-paths 32
+  maximum-paths ibgp 32
+  dampening
+ !
+ address-family l2vpn evpn
+  advertise ipv4 unicast
+!
+{# Leaf-3 #}
+router bgp 65102 vrf Vrf-Tenant-1
+ address-family ipv4 unicast
+  redistribute connected
+  maximum-paths 32
+  maximum-paths ibgp 32
+  dampening
+ !
+ address-family l2vpn evpn
+  advertise ipv4 unicast
 !
